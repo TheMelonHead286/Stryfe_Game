@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://dbbiqu8uq44th"]
 
 [ext_resource type="Script" uid="uid://cm0ilu02s8rhg" path="res://root.gd" id="1_28aoi"]
+[ext_resource type="Script" uid="uid://bihwboldyp8n" path="res://grid_handler.gd" id="2_28aoi"]
 [ext_resource type="Script" uid="uid://dckowccru1dtu" path="res://character_body_2d.gd" id="2_jnlp7"]
+[ext_resource type="Script" uid="uid://dn7t4fjkqsvne" path="res://interface_handler.gd" id="4_jnlp7"]
 [ext_resource type="Texture2D" uid="uid://ci5okkvit4f7d" path="res://textures/prealpha/screen_mock.png" id="4_vyht1"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_vvh5c"]
@@ -10,20 +12,27 @@ load_path = "res://.godot/imported/lil_guy.png-4e20c9e1bb42556a6fda9195570c525e.
 [node name="Root" type="Node2D" unique_id=1768194969]
 script = ExtResource("1_28aoi")
 
-[node name="Character" type="CharacterBody2D" parent="." unique_id=473060783]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1259752566]
+texture_filter = 1
+
+[node name="LevelHandler" type="Node2D" parent="." unique_id=1010630348]
+z_index = -1
+script = ExtResource("2_28aoi")
+
+[node name="Character" type="CharacterBody2D" parent="LevelHandler" unique_id=473060783]
 script = ExtResource("2_jnlp7")
 
-[node name="Sprite2D" type="Sprite2D" parent="Character" unique_id=760688139]
+[node name="Sprite2D" type="Sprite2D" parent="LevelHandler/Character" unique_id=760688139]
 z_index = 1
 texture_filter = 1
 scale = Vector2(2, 2)
 texture = SubResource("CompressedTexture2D_vvh5c")
 
-[node name="ScreenOverlay" type="Sprite2D" parent="." unique_id=396840287]
+[node name="InterfaceHandler" type="Node2D" parent="." unique_id=1449958456]
+script = ExtResource("4_jnlp7")
+
+[node name="ScreenOverlay" type="Sprite2D" parent="InterfaceHandler" unique_id=396840287]
 z_index = 10
 texture_filter = 1
 scale = Vector2(36.1, 36.1)
 texture = ExtResource("4_vyht1")
-
-[node name="Camera2D" type="Camera2D" parent="." unique_id=1259752566]
-texture_filter = 1
