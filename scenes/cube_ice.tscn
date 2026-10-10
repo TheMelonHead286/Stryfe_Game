@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://fh352ds3kyle"]
+
+[ext_resource type="Texture2D" uid="uid://8m5jouph5g6a" path="res://textures/prealpha/cube_ice.png" id="1_7eqbb"]
+
+[node name="CubeIce" type="Sprite2D" unique_id=2069344979]
+texture_filter = 1
+scale = Vector2(2, 2)
+texture = ExtResource("1_7eqbb")
+metadata/type = "cubeice"

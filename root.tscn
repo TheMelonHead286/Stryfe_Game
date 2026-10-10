@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://cm0ilu02s8rhg" path="res://root.gd" id="1_28aoi"]
 [ext_resource type="Script" uid="uid://bihwboldyp8n" path="res://grid_handler.gd" id="2_28aoi"]
-[ext_resource type="Script" uid="uid://dckowccru1dtu" path="res://character_body_2d.gd" id="2_jnlp7"]
 [ext_resource type="Script" uid="uid://dn7t4fjkqsvne" path="res://interface_handler.gd" id="4_jnlp7"]
 [ext_resource type="Texture2D" uid="uid://ci5okkvit4f7d" path="res://textures/prealpha/screen_mock.png" id="4_vyht1"]
 
@@ -19,14 +18,12 @@ texture_filter = 1
 z_index = -1
 script = ExtResource("2_28aoi")
 
-[node name="Character" type="CharacterBody2D" parent="LevelHandler" unique_id=473060783]
-script = ExtResource("2_jnlp7")
-
-[node name="Sprite2D" type="Sprite2D" parent="LevelHandler/Character" unique_id=760688139]
+[node name="Character" type="Sprite2D" parent="LevelHandler" unique_id=760688139]
 z_index = 1
 texture_filter = 1
 scale = Vector2(2, 2)
 texture = SubResource("CompressedTexture2D_vvh5c")
+metadata/type = "character"
 
 [node name="InterfaceHandler" type="Node2D" parent="." unique_id=1449958456]
 script = ExtResource("4_jnlp7")
