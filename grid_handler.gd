@@ -2,18 +2,34 @@ extends Node2D
 
 #dictionary to keep track of objects on board
 var ActiveGrid = {}
+var ActiveGridSliding = []
 
 #Hexagons but square internal grid cause thats easier :)
 #-2- 4 hours later, square internal grid NOT easy, square internal grid fucking HARD
+#okay now this has turned into general update things on board function, i should probably split it.....
 func InternalposToGamepos(X,Y,moveto):
 	#autofail if moving something that doesnt exist
 	if str(X)+","+str(Y) not in ActiveGrid:
 		return false
 	
 	var object = ActiveGrid[str(X)+","+str(Y)]
+	if object is String:
+		#i swear, as you code, more and more ghosts appear. its sort of freaky
+		print("empty tried to move")
+		return false
+	
+	#Special cases for objects (pre position change)
+	if object.get_meta("type") == "cubeice":
+		object.set_meta("sliding", true)
+	if object.has_meta("sliding") and object.get_meta("sliding") == true:
+		object.set_meta("facing", moveto)
+		if object not in ActiveGridSliding:
+			ActiveGridSliding.append(object)
+	else:
+		object.set_meta("sliding", false)
 	
 	#remove old position
-	#update new position (if facing is RIGHT, move to the RIGHT)
+	#update new position (if facing is RIGHT, move obj to the RIGHT)
 	if moveto == "RIGHT":
 		if ActiveGrid.has(str(X+1)+","+str(Y)) and ActiveGrid[str(X+1)+","+str(Y)] is String:
 			ActiveGrid[str(X)+","+str(Y)] = "empty"
@@ -143,11 +159,12 @@ func InternalposToGamepos(X,Y,moveto):
 		print("moving object did not have facing direction")
 		return false
 		
-	#Character coords are special cause only 1 character :)
+	#Special cases for objects (post position update)
+	#print(str(moveto)+str(object)+" "+str(X)+","+str(Y))
+	#print(str(ActiveGridSliding))
 	if object.get_meta("type") == "character":
 		CharacterX = X
 		CharacterY = Y
-		
 	#1 internalx = 64 externalx
 	#1 internaly = 50 externaly
 	#the actual updating, is really simple
@@ -155,7 +172,6 @@ func InternalposToGamepos(X,Y,moveto):
 		object.position = Vector2(((X * 64) + 32),(Y * 50))
 	else:
 		object.position = Vector2((X * 64),(Y * 50))
-	#print(str(X)+","+str(Y)+objectName)
 	return true
 
 #generating grid of level
@@ -194,9 +210,10 @@ func _ready() -> void:
 
 var cube = load("res://scenes/cube.tscn")
 var cubeIce = load("res://scenes/cube_ice.tscn")
+@onready var InterfaceHandler = $InterfaceHandler
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	#spawn cube [temp]
+	#spawn cube / ice cube [temp]
 	if Input.is_action_just_pressed("ACCEPT"):
 		if ActiveGrid.has(str(CharacterX-1)+","+str(CharacterY)) and ActiveGrid[str(CharacterX-1)+","+str(CharacterY)] is String:
 			var cubeinst = cube.instantiate()
@@ -220,15 +237,29 @@ func _process(delta: float) -> void:
 	#hexagonal movement means six movement axis, up/down, topleft/bottomright, bottomleft/topright
 	#movement used to look crazy until i just made a crazy function for everything instead. took a while.
 	if Input.is_action_just_pressed("LEFT"):
-		InternalposToGamepos(CharacterX,CharacterY,"LEFT")
+		if InternalposToGamepos(CharacterX,CharacterY,"LEFT") == true:
+			updateTime()
 	elif Input.is_action_just_pressed("RIGHT"):
-		InternalposToGamepos(CharacterX,CharacterY,"RIGHT")
+		if InternalposToGamepos(CharacterX,CharacterY,"RIGHT") == true:
+			updateTime()
 	elif Input.is_action_just_pressed("LOWN"):
-		InternalposToGamepos(CharacterX,CharacterY,"LOWN")
+		if InternalposToGamepos(CharacterX,CharacterY,"LOWN") == true:
+			updateTime()
 	elif Input.is_action_just_pressed("ROWN"):
-		InternalposToGamepos(CharacterX,CharacterY,"ROWN")
+		if InternalposToGamepos(CharacterX,CharacterY,"ROWN") == true:
+			updateTime()
 	elif Input.is_action_just_pressed("LUP"):
-		InternalposToGamepos(CharacterX,CharacterY,"LUP")
+		if InternalposToGamepos(CharacterX,CharacterY,"LUP") == true:
+			updateTime()
 	elif Input.is_action_just_pressed("RUP"):
-		InternalposToGamepos(CharacterX,CharacterY,"RUP")
+		if InternalposToGamepos(CharacterX,CharacterY,"RUP") == true:
+			updateTime()
 		
+func updateTime():
+	InterfaceHandler.clockTick()
+	var popTicker = 0
+	for sliders in ActiveGridSliding:
+		if await InternalposToGamepos(int(sliders.position.x/64), int(sliders.position.y/50), sliders.get_meta("facing")) == false:
+			sliders.set_meta("sliding", false)
+			ActiveGridSliding.pop_at(popTicker)
+		popTicker += 1

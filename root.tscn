@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://c8jjpc1aqamyb" path="res://textures/prealpha/lil_guy_instructions.png" id="3_jnlp7"]
 [ext_resource type="Script" uid="uid://dn7t4fjkqsvne" path="res://interface_handler.gd" id="4_jnlp7"]
 [ext_resource type="Texture2D" uid="uid://ci5okkvit4f7d" path="res://textures/prealpha/screen_mock.png" id="4_vyht1"]
+[ext_resource type="Texture2D" uid="uid://getaqcqh3v2l" path="res://textures/prealpha/clocktr.png" id="6_l8v81"]
 
 [node name="Root" type="Node2D" unique_id=1768194969]
 script = ExtResource("1_28aoi")
@@ -23,11 +24,18 @@ scale = Vector2(2, 2)
 texture = ExtResource("3_jnlp7")
 metadata/type = "character"
 
-[node name="InterfaceHandler" type="Node2D" parent="." unique_id=1449958456]
+[node name="InterfaceHandler" type="Node2D" parent="LevelHandler" unique_id=1449958456]
 script = ExtResource("4_jnlp7")
 
-[node name="ScreenOverlay" type="Sprite2D" parent="InterfaceHandler" unique_id=396840287]
-z_index = 10
+[node name="ScreenOverlay" type="Sprite2D" parent="LevelHandler/InterfaceHandler" unique_id=396840287]
+z_index = 5
 texture_filter = 1
 scale = Vector2(36.1, 36.1)
 texture = ExtResource("4_vyht1")
+
+[node name="Clock" type="Sprite2D" parent="LevelHandler/InterfaceHandler" unique_id=2061077412]
+z_index = 6
+texture_filter = 1
+position = Vector2(-511, -263)
+scale = Vector2(3, 3)
+texture = ExtResource("6_l8v81")
