@@ -7,15 +7,17 @@ var ActiveGridSliding = []
 #Hexagons but square internal grid cause thats easier :)
 #-2- 4 hours later, square internal grid NOT easy, square internal grid fucking HARD
 #okay now this has turned into general update things on board function, i should probably split it.....
-func InternalposToGamepos(X,Y,moveto):
-	#autofail if moving something that doesnt exist
-	if str(X)+","+str(Y) not in ActiveGrid:
-		return false
-	
-	var object = ActiveGrid[str(X)+","+str(Y)]
+func InternalposToGamepos(object,moveto):
 	if object is String:
 		#i swear, as you code, more and more ghosts appear. its sort of freaky
-		print("empty tried to move")
+		print(str(object)+" tried to move "+moveto)
+		return false
+	
+	var X = object.get_meta("X")
+	var Y = object.get_meta("Y")
+	
+	#autofail if moving something that doesnt exist
+	if str(X)+","+str(Y) not in ActiveGrid:
 		return false
 	
 	#Special cases for objects (pre position change)
@@ -35,7 +37,7 @@ func InternalposToGamepos(X,Y,moveto):
 			ActiveGrid[str(X)+","+str(Y)] = "empty"
 			X += 1
 		else:
-			if InternalposToGamepos(X+1,Y,moveto) == true:
+			if ActiveGrid.has(str(X+1)+","+str(Y)) and InternalposToGamepos(ActiveGrid[str(X+1)+","+str(Y)],moveto) == true:
 				ActiveGrid[str(X)+","+str(Y)] = "empty"
 				X += 1
 			else:
@@ -46,7 +48,7 @@ func InternalposToGamepos(X,Y,moveto):
 			ActiveGrid[str(X)+","+str(Y)] = "empty"
 			X -= 1
 		else:
-			if InternalposToGamepos(X-1,Y,moveto) == true:
+			if ActiveGrid.has(str(X-1)+","+str(Y)) and InternalposToGamepos(ActiveGrid[str(X-1)+","+str(Y)],moveto) == true:
 				ActiveGrid[str(X)+","+str(Y)] = "empty"
 				X -= 1
 			else:
@@ -59,7 +61,7 @@ func InternalposToGamepos(X,Y,moveto):
 				X -= 1
 				Y += 1
 			else:
-				if InternalposToGamepos(X-1,Y+1,moveto) == true:
+				if ActiveGrid.has(str(X-1)+","+str(Y+1)) and InternalposToGamepos(ActiveGrid[str(X-1)+","+str(Y+1)],moveto) == true:
 					ActiveGrid[str(X)+","+str(Y)] = "empty"
 					X -= 1
 					Y += 1
@@ -70,7 +72,7 @@ func InternalposToGamepos(X,Y,moveto):
 				ActiveGrid[str(X)+","+str(Y)] = "empty"
 				Y+= 1
 			else:
-				if InternalposToGamepos(X,Y+1,moveto) == true:
+				if ActiveGrid.has(str(X)+","+str(Y+1)) and InternalposToGamepos(ActiveGrid[str(X)+","+str(Y+1)],moveto) == true:
 					ActiveGrid[str(X)+","+str(Y)] = "empty"
 					Y+= 1
 				else:
@@ -83,7 +85,7 @@ func InternalposToGamepos(X,Y,moveto):
 				X += 1
 				Y += 1
 			else:
-				if InternalposToGamepos(X+1,Y+1,moveto) == true:
+				if ActiveGrid.has(str(X+1)+","+str(Y+1)) and InternalposToGamepos(ActiveGrid[str(X+1)+","+str(Y+1)],moveto) == true:
 					ActiveGrid[str(X)+","+str(Y)] = "empty"
 					X += 1
 					Y += 1
@@ -94,7 +96,7 @@ func InternalposToGamepos(X,Y,moveto):
 				ActiveGrid[str(X)+","+str(Y)] = "empty"
 				Y += 1
 			else:
-				if InternalposToGamepos(X,Y+1,moveto) == true:
+				if ActiveGrid.has(str(X)+","+str(Y+1)) and InternalposToGamepos(ActiveGrid[str(X)+","+str(Y+1)],moveto) == true:
 					ActiveGrid[str(X)+","+str(Y)] = "empty"
 					Y += 1
 				else:
@@ -107,7 +109,7 @@ func InternalposToGamepos(X,Y,moveto):
 				X -= 1
 				Y -= 1
 			else:
-				if InternalposToGamepos(X-1,Y-1,moveto) == true:
+				if ActiveGrid.has(str(X-1)+","+str(Y-1)) and InternalposToGamepos(ActiveGrid[str(X-1)+","+str(Y-1)],moveto) == true:
 					ActiveGrid[str(X)+","+str(Y)] = "empty"
 					X -= 1
 					Y -= 1
@@ -118,7 +120,7 @@ func InternalposToGamepos(X,Y,moveto):
 				ActiveGrid[str(X)+","+str(Y)] = "empty"
 				Y -= 1
 			else:
-				if InternalposToGamepos(X,Y-1,moveto) == true:
+				if ActiveGrid.has(str(X)+","+str(Y-1)) and InternalposToGamepos(ActiveGrid[str(X)+","+str(Y-1)],moveto) == true:
 					ActiveGrid[str(X)+","+str(Y)] = "empty"
 					Y -= 1
 				else:
@@ -131,7 +133,7 @@ func InternalposToGamepos(X,Y,moveto):
 				X += 1
 				Y -= 1
 			else:
-				if InternalposToGamepos(X+1,Y-1,moveto) == true:
+				if ActiveGrid.has(str(X+1)+","+str(Y-1)) and InternalposToGamepos(ActiveGrid[str(X+1)+","+str(Y-1)],moveto) == true:
 					ActiveGrid[str(X)+","+str(Y)] = "empty"
 					X += 1
 					Y -= 1
@@ -142,11 +144,14 @@ func InternalposToGamepos(X,Y,moveto):
 				ActiveGrid[str(X)+","+str(Y)] = "empty"
 				Y -= 1
 			else:
-				if InternalposToGamepos(X,Y-1,moveto) == true:
+				if ActiveGrid.has(str(X)+","+str(Y-1)) and InternalposToGamepos(ActiveGrid[str(X)+","+str(Y-1)],moveto) == true:
 					ActiveGrid[str(X)+","+str(Y)] = "empty"
 					Y -= 1
 				else:
 					return false
+		#one well-placed catch/try for an invalid dictionary key could have saved 50% of this code
+		#but, cant really blame godot for not having that built into their system
+		#still. would have saved a lot of code.
 		ActiveGrid[str(X)+","+str(Y)] = object
 	elif moveto == "NEUTRAL":
 		#lmao bye then
@@ -165,13 +170,17 @@ func InternalposToGamepos(X,Y,moveto):
 	if object.get_meta("type") == "character":
 		CharacterX = X
 		CharacterY = Y
+	
 	#1 internalx = 64 externalx
 	#1 internaly = 50 externaly
 	#the actual updating, is really simple
+	object.set_meta("X",X)
+	object.set_meta("Y",Y)
 	if abs(Y) % 2 == 1:
 		object.position = Vector2(((X * 64) + 32),(Y * 50))
 	else:
 		object.position = Vector2((X * 64),(Y * 50))
+		
 	return true
 
 #generating grid of level
@@ -207,6 +216,8 @@ var CharacterY = 0
 func _ready() -> void:
 	gengrid()
 	ActiveGrid[str(CharacterX)+","+str(CharacterY)] = $Character
+	$Character.set_meta("X",0)
+	$Character.set_meta("Y",0)
 
 var cube = load("res://scenes/cube.tscn")
 var cubeIce = load("res://scenes/cube_ice.tscn")
@@ -215,51 +226,67 @@ var cubeIce = load("res://scenes/cube_ice.tscn")
 func _process(delta: float) -> void:
 	#spawn cube / ice cube [temp]
 	if Input.is_action_just_pressed("ACCEPT"):
-		if ActiveGrid.has(str(CharacterX-1)+","+str(CharacterY)) and ActiveGrid[str(CharacterX-1)+","+str(CharacterY)] is String:
-			var cubeinst = cube.instantiate()
-			if abs(CharacterY) % 2 == 1:
-				cubeinst.position = Vector2((((CharacterX-1) * 64) + 32),(CharacterY * 50))
-			else:
-				cubeinst.position = Vector2(((CharacterX-1) * 64),(CharacterY * 50))
-			add_child(cubeinst)
-			ActiveGrid[str(CharacterX-1)+","+str(CharacterY)] = cubeinst
+		spawnCube(CharacterX-1,CharacterY)
 	elif Input.is_action_just_pressed("DENY"):
-		if ActiveGrid.has(str(CharacterX+1)+","+str(CharacterY)) and ActiveGrid[str(CharacterX+1)+","+str(CharacterY)] is String:
-			var cubeIceinst = cubeIce.instantiate()
-			if abs(CharacterY) % 2 == 1:
-				cubeIceinst.position = Vector2((((CharacterX+1) * 64) + 32),(CharacterY * 50))
-			else:
-				cubeIceinst.position = Vector2(((CharacterX+1) * 64),(CharacterY * 50))
-			add_child(cubeIceinst)
-			ActiveGrid[str(CharacterX+1)+","+str(CharacterY)] = cubeIceinst
+		spawnIceCube(CharacterX+1,CharacterY)
 		
 	#player stuff!
 	#hexagonal movement means six movement axis, up/down, topleft/bottomright, bottomleft/topright
 	#movement used to look crazy until i just made a crazy function for everything instead. took a while.
 	if Input.is_action_just_pressed("LEFT"):
-		if InternalposToGamepos(CharacterX,CharacterY,"LEFT") == true:
+		if InternalposToGamepos($Character,"LEFT") == true:
 			updateTime()
 	elif Input.is_action_just_pressed("RIGHT"):
-		if InternalposToGamepos(CharacterX,CharacterY,"RIGHT") == true:
+		if InternalposToGamepos($Character,"RIGHT") == true:
 			updateTime()
 	elif Input.is_action_just_pressed("LOWN"):
-		if InternalposToGamepos(CharacterX,CharacterY,"LOWN") == true:
+		if InternalposToGamepos($Character,"LOWN") == true:
 			updateTime()
 	elif Input.is_action_just_pressed("ROWN"):
-		if InternalposToGamepos(CharacterX,CharacterY,"ROWN") == true:
+		if InternalposToGamepos($Character,"ROWN") == true:
 			updateTime()
 	elif Input.is_action_just_pressed("LUP"):
-		if InternalposToGamepos(CharacterX,CharacterY,"LUP") == true:
+		if InternalposToGamepos($Character,"LUP") == true:
 			updateTime()
 	elif Input.is_action_just_pressed("RUP"):
-		if InternalposToGamepos(CharacterX,CharacterY,"RUP") == true:
+		if InternalposToGamepos($Character,"RUP") == true:
 			updateTime()
-		
+
+func spawnCube(X,Y):
+	if ActiveGrid.has(str(X)+","+str(Y)) and ActiveGrid[str(X)+","+str(Y)] is String:
+			var cubeinst = cube.instantiate()
+			if abs(Y) % 2 == 1:
+				cubeinst.position = Vector2((((X) * 64) + 32),(Y * 50))
+			else:
+				cubeinst.position = Vector2(((X) * 64),(Y * 50))
+			cubeinst.set_meta("X",X)
+			cubeinst.set_meta("Y",Y)
+			add_child(cubeinst)
+			ActiveGrid[str(X)+","+str(Y)] = cubeinst
+	else:
+		return false
+
+func spawnIceCube(X,Y):
+	if ActiveGrid.has(str(X)+","+str(Y)) and ActiveGrid[str(X)+","+str(Y)] is String:
+			var cubeIceinst = cubeIce.instantiate()
+			if abs(Y) % 2 == 1:
+				cubeIceinst.position = Vector2((((X) * 64) + 32),(Y * 50))
+			else:
+				cubeIceinst.position = Vector2(((X) * 64),(Y * 50))
+			cubeIceinst.set_meta("X",X)
+			cubeIceinst.set_meta("Y",Y)
+			add_child(cubeIceinst)
+			ActiveGrid[str(X)+","+str(Y)] = cubeIceinst
+	else:
+		return false
+
 func updateTime():
 	InterfaceHandler.clockTick()
 	var popTicker = 0
 	for sliders in ActiveGridSliding:
-		if await InternalposToGamepos(int(sliders.position.x/64), int(sliders.position.y/50), sliders.get_meta("facing")) == false:
+		if InternalposToGamepos(sliders, sliders.get_meta("facing")) == false:
 			sliders.set_meta("sliding", false)
+			sliders.set_meta("facing", "NEUTRAL")
 			ActiveGridSliding.pop_at(popTicker)
+			print("slide failed")
 		popTicker += 1
