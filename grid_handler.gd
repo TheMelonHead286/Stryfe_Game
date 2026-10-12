@@ -3,6 +3,8 @@ extends Node2D
 #dictionary to keep track of objects on board
 var ActiveGrid = {}
 var ActiveGridSliding = []
+#are inputs going to the grid, UI, or something else
+var InputMode = "GRID"
 
 #Hexagons but square internal grid cause thats easier :)
 #-2- 4 hours later, square internal grid NOT easy, square internal grid fucking HARD
@@ -226,46 +228,76 @@ var cubeIce = load("res://scenes/cube_ice.tscn")
 @onready var InterfaceHandler = $InterfaceHandler
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	#spawn cube / ice cube [temp]
+	#Swapping input modes grid/ui elements
 	if Input.is_action_just_pressed("ACCEPT"):
-		spawnCube(CharacterX-1,CharacterY)
+		if InputMode == "GRID":
+			InputMode = "GRIDbutcooler"
+		elif InputMode == "GRIDbutcooler":
+			InputMode = "GRID"
+		$Character/Arrow.visible = !$Character/Arrow.visible
+		$Character/HexInstructions.visible = !$Character/HexInstructions.visible
 	elif Input.is_action_just_pressed("DENY"):
-		spawnIceCube(CharacterX+1,CharacterY)
-	elif Input.is_action_just_pressed("WAIT"):
+		#spawn cube / ice cube [temp]
+		if InputMode == "GRID":
+			spawnCube(CharacterX-1,CharacterY)
+		elif InputMode == "GRIDbutcooler":
+			spawnIceCube(CharacterX+1,CharacterY)
+		
+	if Input.is_action_just_pressed("WAIT"):
 		updateTime()
 	
 	#player stuff!
 	#hexagonal movement means six movement axis, up/down, topleft/bottomright, bottomleft/topright
-	#it has now been updated, move the next direction to step
-	if Input.is_action_just_pressed("LEFT"):
-		if CharacterFacing == 0:
-			CharacterFacing = 6
-		CharacterFacing -= 1
-		#$Character/Arrow.offset.x = (cos(CharacterFacing*(3.14/3))*25)
-		#$Character/Arrow.offset.y = (sin(CharacterFacing*(3.14/3))*25)
-		$Character/Arrow.rotation_degrees = CharacterFacing*60
-	elif Input.is_action_just_pressed("RIGHT"):
-		CharacterFacing += 1
-		if CharacterFacing == 6:
-			CharacterFacing = 0
-		#$Character/Arrow.offset.x = (cos(CharacterFacing*(3.14/3))*25)
-		#$Character/Arrow.offset.y = (sin(CharacterFacing*(3.14/3))*25)
-		$Character/Arrow.rotation_degrees = CharacterFacing*60
-	elif Input.is_action_just_pressed("FORWARD"):
-		if CharacterFacing == 0:
-			forSakeOfCodeReadabilityTheCharacterIsFacing = "RIGHT"
-		elif CharacterFacing == 1:
-			forSakeOfCodeReadabilityTheCharacterIsFacing = "ROWN"
-		elif CharacterFacing == 2:
-			forSakeOfCodeReadabilityTheCharacterIsFacing = "LOWN"
-		elif CharacterFacing == 3:
-			forSakeOfCodeReadabilityTheCharacterIsFacing = "LEFT"
-		elif CharacterFacing == 4:
-			forSakeOfCodeReadabilityTheCharacterIsFacing = "LUP"
-		elif CharacterFacing == 5:
-			forSakeOfCodeReadabilityTheCharacterIsFacing = "RUP"
-		if InternalposToGamepos($Character,forSakeOfCodeReadabilityTheCharacterIsFacing) == true:
-			updateTime()
+	if InputMode == "GRID":
+		if Input.is_action_just_pressed("LEFT"):
+			if InternalposToGamepos($Character,"LEFT") == true:
+				updateTime()
+		elif Input.is_action_just_pressed("RIGHT"):
+			if InternalposToGamepos($Character,"RIGHT") == true:
+				updateTime()
+		elif Input.is_action_just_pressed("LOWN"):
+			if InternalposToGamepos($Character,"LOWN") == true:
+				updateTime()
+		elif Input.is_action_just_pressed("ROWN"):
+			if InternalposToGamepos($Character,"ROWN") == true:
+				updateTime()
+		elif Input.is_action_just_pressed("LUP"):
+			if InternalposToGamepos($Character,"LUP") == true:
+				updateTime()
+		elif Input.is_action_just_pressed("RUP"):
+			if InternalposToGamepos($Character,"RUP") == true:
+				updateTime()
+	elif InputMode == "GRIDbutcooler":
+		#it has now been updated, move the next direction to step
+		if Input.is_action_just_pressed("LEFT"):
+			if CharacterFacing == 0:
+				CharacterFacing = 6
+			CharacterFacing -= 1
+			#$Character/Arrow.offset.x = (cos(CharacterFacing*(3.14/3))*25)
+			#$Character/Arrow.offset.y = (sin(CharacterFacing*(3.14/3))*25)
+			$Character/Arrow.rotation_degrees = CharacterFacing*60
+		elif Input.is_action_just_pressed("RIGHT"):
+			CharacterFacing += 1
+			if CharacterFacing == 6:
+				CharacterFacing = 0
+			#$Character/Arrow.offset.x = (cos(CharacterFacing*(3.14/3))*25)
+			#$Character/Arrow.offset.y = (sin(CharacterFacing*(3.14/3))*25)
+			$Character/Arrow.rotation_degrees = CharacterFacing*60
+		elif Input.is_action_just_pressed("FORWARD"):
+			if CharacterFacing == 0:
+				forSakeOfCodeReadabilityTheCharacterIsFacing = "RIGHT"
+			elif CharacterFacing == 1:
+				forSakeOfCodeReadabilityTheCharacterIsFacing = "ROWN"
+			elif CharacterFacing == 2:
+				forSakeOfCodeReadabilityTheCharacterIsFacing = "LOWN"
+			elif CharacterFacing == 3:
+				forSakeOfCodeReadabilityTheCharacterIsFacing = "LEFT"
+			elif CharacterFacing == 4:
+				forSakeOfCodeReadabilityTheCharacterIsFacing = "LUP"
+			elif CharacterFacing == 5:
+				forSakeOfCodeReadabilityTheCharacterIsFacing = "RUP"
+			if InternalposToGamepos($Character,forSakeOfCodeReadabilityTheCharacterIsFacing) == true:
+				updateTime()
 
 func spawnCube(X,Y):
 	if ActiveGrid.has(str(X)+","+str(Y)) and ActiveGrid[str(X)+","+str(Y)] is String:
