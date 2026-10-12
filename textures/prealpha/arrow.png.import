@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8jjpc1aqamyb"
-path="res://.godot/imported/lil_guy_instructions.png-7c4b01c2427e4f1f006f6d0533ad5f10.ctex"
+uid="uid://dnjprq3cl5w3u"
+path="res://.godot/imported/arrow.png-836a680993fe4ad097a9f6e1b0d12101.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://textures/prealpha/lil_guy_instructions.png"
-dest_files=["res://.godot/imported/lil_guy_instructions.png-7c4b01c2427e4f1f006f6d0533ad5f10.ctex"]
+source_file="res://textures/prealpha/arrow.png"
+dest_files=["res://.godot/imported/arrow.png-836a680993fe4ad097a9f6e1b0d12101.ctex"]
 
 [params]
 

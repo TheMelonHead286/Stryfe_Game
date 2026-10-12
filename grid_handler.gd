@@ -189,7 +189,7 @@ func gengrid() -> void:
 	for ix in range(-8,9):
 		for iy in range(-2,3):
 			var tile = Sprite2D.new()
-			tile.texture = load("res://textures/prealpha/tile_slippy.png")
+			tile.texture = load("res://textures/prealpha/tile.png")
 			tile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			tile.scale = Vector2(2,2)
 			tile.z_index = -2
@@ -201,7 +201,7 @@ func gengrid() -> void:
 	for ix in range(-9,9):
 		for iy in range(-2,3):
 			var tile = Sprite2D.new()
-			tile.texture = load("res://textures/prealpha/tile_slippy.png")
+			tile.texture = load("res://textures/prealpha/tile.png")
 			tile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			tile.scale = Vector2(2,2)
 			tile.z_index = -2
@@ -212,6 +212,8 @@ func gengrid() -> void:
 
 var CharacterX = 0
 var CharacterY = 0
+var CharacterFacing = 0
+var forSakeOfCodeReadabilityTheCharacterIsFacing = "RIGHT"
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	gengrid()
@@ -229,27 +231,40 @@ func _process(delta: float) -> void:
 		spawnCube(CharacterX-1,CharacterY)
 	elif Input.is_action_just_pressed("DENY"):
 		spawnIceCube(CharacterX+1,CharacterY)
-		
+	elif Input.is_action_just_pressed("WAIT"):
+		updateTime()
+	
 	#player stuff!
 	#hexagonal movement means six movement axis, up/down, topleft/bottomright, bottomleft/topright
-	#movement used to look crazy until i just made a crazy function for everything instead. took a while.
+	#it has now been updated, move the next direction to step
 	if Input.is_action_just_pressed("LEFT"):
-		if InternalposToGamepos($Character,"LEFT") == true:
-			updateTime()
+		if CharacterFacing == 0:
+			CharacterFacing = 6
+		CharacterFacing -= 1
+		#$Character/Arrow.offset.x = (cos(CharacterFacing*(3.14/3))*25)
+		#$Character/Arrow.offset.y = (sin(CharacterFacing*(3.14/3))*25)
+		$Character/Arrow.rotation_degrees = CharacterFacing*60
 	elif Input.is_action_just_pressed("RIGHT"):
-		if InternalposToGamepos($Character,"RIGHT") == true:
-			updateTime()
-	elif Input.is_action_just_pressed("LOWN"):
-		if InternalposToGamepos($Character,"LOWN") == true:
-			updateTime()
-	elif Input.is_action_just_pressed("ROWN"):
-		if InternalposToGamepos($Character,"ROWN") == true:
-			updateTime()
-	elif Input.is_action_just_pressed("LUP"):
-		if InternalposToGamepos($Character,"LUP") == true:
-			updateTime()
-	elif Input.is_action_just_pressed("RUP"):
-		if InternalposToGamepos($Character,"RUP") == true:
+		CharacterFacing += 1
+		if CharacterFacing == 6:
+			CharacterFacing = 0
+		#$Character/Arrow.offset.x = (cos(CharacterFacing*(3.14/3))*25)
+		#$Character/Arrow.offset.y = (sin(CharacterFacing*(3.14/3))*25)
+		$Character/Arrow.rotation_degrees = CharacterFacing*60
+	elif Input.is_action_just_pressed("FORWARD"):
+		if CharacterFacing == 0:
+			forSakeOfCodeReadabilityTheCharacterIsFacing = "RIGHT"
+		elif CharacterFacing == 1:
+			forSakeOfCodeReadabilityTheCharacterIsFacing = "ROWN"
+		elif CharacterFacing == 2:
+			forSakeOfCodeReadabilityTheCharacterIsFacing = "LOWN"
+		elif CharacterFacing == 3:
+			forSakeOfCodeReadabilityTheCharacterIsFacing = "LEFT"
+		elif CharacterFacing == 4:
+			forSakeOfCodeReadabilityTheCharacterIsFacing = "LUP"
+		elif CharacterFacing == 5:
+			forSakeOfCodeReadabilityTheCharacterIsFacing = "RUP"
+		if InternalposToGamepos($Character,forSakeOfCodeReadabilityTheCharacterIsFacing) == true:
 			updateTime()
 
 func spawnCube(X,Y):
@@ -288,5 +303,4 @@ func updateTime():
 			sliders.set_meta("sliding", false)
 			sliders.set_meta("facing", "NEUTRAL")
 			ActiveGridSliding.pop_at(popTicker)
-			print("slide failed")
 		popTicker += 1
