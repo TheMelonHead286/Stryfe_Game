@@ -1,7 +1,7 @@
 extends Node2D
 
 #dictionary to keep track of objects in level
-var ActiveGrid = {}
+var ActiveGrid = {} #need to change to a list of objects, grab x/y from object metadata
 var ActiveGridSliding = []
 
 #level grid, may need to be dynamic, doubles the value entered
@@ -9,12 +9,15 @@ var ActiveGridMaxX = 11
 var ActiveGridMaxY = 4
 var ActiveLevelScale = 0.78 #<- intened for 9 x 3 grid, scales everything accordingly
 
-#are inputs going to the grid, UI, or dialogue 
+#semi-command pattern inputs, inputs can go to the grid, UI, or dialogue (only grid inputs can be undone)
 var InputMode = "GRIDbutcooler"
+var GameState = []#: is a list, that has lists, of dictionaries of objects' states
+#order of lists are previous states, each key is the object, value is a list of metadata of the object
 
 #Hexagons but square internal grid cause thats easier :)
 #-2-4 hours later, square internal grid NOT easy, square internal grid fucking HARD
 #okay now this has turned into general update things on board function, i should probably split it.....
+#wrong! i do not want to split this: undoing game states
 func InternalposToGamepos(object,moveto):
 	if object is String:
 		#i swear, as you code, more and more ghosts appear. its sort of freaky
@@ -320,6 +323,8 @@ func _process(delta: float) -> void:
 				forSakeOfCodeReadabilityTheCharacterIsFacing = "RUP"
 			if InternalposToGamepos($Character,forSakeOfCodeReadabilityTheCharacterIsFacing) == true:
 				updateTime()
+		elif Input.is_action_just_pressed("UNDO"):
+			print(GameState[0])
 
 func updateTime():
 	InterfaceHandler.clockTick()
