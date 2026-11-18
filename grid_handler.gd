@@ -1,13 +1,19 @@
 extends Node2D
 
-#dictionary to keep track of objects on board
+#dictionary to keep track of objects in level
 var ActiveGrid = {}
 var ActiveGridSliding = []
-#are inputs going to the grid, UI, or something else
-var InputMode = "GRID"
+
+#level grid, may need to be dynamic, doubles the value entered
+var ActiveGridMaxX = 11
+var ActiveGridMaxY = 4
+var ActiveLevelScale = 0.78 #<- intened for 9 x 3 grid, scales everything accordingly
+
+#are inputs going to the grid, UI, or dialogue 
+var InputMode = "GRIDbutcooler"
 
 #Hexagons but square internal grid cause thats easier :)
-#-2- 4 hours later, square internal grid NOT easy, square internal grid fucking HARD
+#-2-4 hours later, square internal grid NOT easy, square internal grid fucking HARD
 #okay now this has turned into general update things on board function, i should probably split it.....
 func InternalposToGamepos(object,moveto):
 	if object is String:
@@ -18,8 +24,8 @@ func InternalposToGamepos(object,moveto):
 	var X = object.get_meta("X")
 	var Y = object.get_meta("Y")
 	
-	#autofail if moving something that doesnt exist
-	if str(X)+","+str(Y) not in ActiveGrid:
+	#autofail if moving something that doesnt exist or is wall
+	if str(X)+","+str(Y) not in ActiveGrid or object.get_meta("type") == "wall":
 		return false
 	
 	#Special cases for objects (pre position change)
@@ -179,94 +185,110 @@ func InternalposToGamepos(object,moveto):
 	object.set_meta("X",X)
 	object.set_meta("Y",Y)
 	if abs(Y) % 2 == 1:
-		object.position = Vector2(((X * 64) + 32),(Y * 50))
+		object.position = Vector2(int(round(ActiveLevelScale*((X * 64) + 32))),int(round(ActiveLevelScale*(Y * 50))))
 	else:
-		object.position = Vector2((X * 64),(Y * 50))
+		object.position = Vector2(int(round(ActiveLevelScale*(X * 64))),int(round(ActiveLevelScale*(Y * 50))))
 		
 	return true
+
+#General use case spawning scrip for cubes, crates (buttons), walls, etc
+var cube = load("res://scenes/cube.tscn")
+var cubeIce = load("res://scenes/cube_ice.tscn")
+var tileWall = load("res://scenes/tile_wall.tscn")
+@onready var InterfaceHandler = $InterfaceHandler
+func SpawnEntity(X,Y,LevelObject):
+	if ActiveGrid.has(str(X)+","+str(Y)) and ActiveGrid[str(X)+","+str(Y)] is String:
+			var inst = LevelObject.instantiate()
+			if abs(Y) % 2 == 1:
+				inst.position = Vector2(int(round(ActiveLevelScale*(((X) * 64) + 32))),int(round(ActiveLevelScale*(Y * 50))))
+			else:
+				inst.position = Vector2(int(round(ActiveLevelScale*((X) * 64))),int(round(ActiveLevelScale*(Y * 50))))
+			inst.set_meta("X",X)
+			inst.set_meta("Y",Y)
+			inst.scale = Vector2(ActiveLevelScale*2,ActiveLevelScale*2)
+			add_child(inst)
+			ActiveGrid[str(X)+","+str(Y)] = inst
+	else:
+		return false
 
 #generating grid of level
 func gengrid() -> void:
 	#half of them, even row
-	for ix in range(-8,9):
-		for iy in range(-2,3):
+	for ix in range(-(ActiveGridMaxX-1),ActiveGridMaxX):
+		for iy in range(-(ActiveGridMaxY-1),ActiveGridMaxY):
 			var tile = Sprite2D.new()
-			tile.texture = load("res://textures/prealpha/tile.png")
 			tile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-			tile.scale = Vector2(2,2)
+			tile.scale = Vector2(ActiveLevelScale*2,ActiveLevelScale*2)
 			tile.z_index = -2
-			tile.position = Vector2(ix*64,iy*100)
+			tile.position = Vector2(int(round(ActiveLevelScale*ix*64)),int(round(ActiveLevelScale*iy*100)))
 			tile.name = "grid,"+str(ix*2)+","+str(iy*2)
+			if ix == -ActiveGridMaxX+1 or iy == -ActiveGridMaxY+1 or ix == ActiveGridMaxX-1 or iy == ActiveGridMaxY-1:
+				tile.texture = load("res://textures/prealpha/tile_wall.png")
+				ActiveGrid[str(ix)+","+str(iy*2)] = tile
+				tile.set_meta("X",ix)
+				tile.set_meta("Y",iy)
+				tile.set_meta("type","wall")
+			else:
+				tile.texture = load("res://textures/prealpha/tile.png")
+				ActiveGrid[str(ix)+","+str(iy*2)] = "empty"
 			add_child(tile)
-			ActiveGrid[str(ix)+","+str(iy*2)] = "empty"
 	#other half, odd row
-	for ix in range(-9,9):
-		for iy in range(-2,3):
+	for ix in range(-ActiveGridMaxX,ActiveGridMaxX):
+		for iy in range(-ActiveGridMaxY,ActiveGridMaxY):
 			var tile = Sprite2D.new()
 			tile.texture = load("res://textures/prealpha/tile.png")
 			tile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-			tile.scale = Vector2(2,2)
+			tile.scale = Vector2(ActiveLevelScale*2,ActiveLevelScale*2)
 			tile.z_index = -2
-			tile.position = Vector2((ix*64)+32,(iy*100)+50)
+			tile.position = Vector2(int(round(ActiveLevelScale*((ix*64)+32))),(int(round(ActiveLevelScale*((iy*100)+50)))))
 			tile.name = "grid,"+str((ix*2)+1)+","+str((iy*2)+1)
+			if ix == -ActiveGridMaxX or iy == -ActiveGridMaxY or ix == ActiveGridMaxX-1 or iy == ActiveGridMaxY-1:
+				tile.texture = load("res://textures/prealpha/tile_wall.png")
+				ActiveGrid[str(ix)+","+str((iy*2)+1)] = tile
+				tile.set_meta("X",ix)
+				tile.set_meta("Y",iy)
+				tile.set_meta("type","wall")
+			else:
+				tile.texture = load("res://textures/prealpha/tile.png")
+				ActiveGrid[str(ix)+","+str((iy*2)+1)] = "empty"
 			add_child(tile)
-			ActiveGrid[str(ix)+","+str((iy*2)+1)] = "empty"
+			
 
+# Called when the node enters the scene tree for the first time.
 var CharacterX = 0
 var CharacterY = 0
 var CharacterFacing = 0
 var forSakeOfCodeReadabilityTheCharacterIsFacing = "RIGHT"
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	gengrid()
 	ActiveGrid[str(CharacterX)+","+str(CharacterY)] = $Character
 	$Character.set_meta("X",0)
 	$Character.set_meta("Y",0)
+	$Character.scale = Vector2(ActiveLevelScale*2,ActiveLevelScale*2)
 
-var cube = load("res://scenes/cube.tscn")
-var cubeIce = load("res://scenes/cube_ice.tscn")
-@onready var InterfaceHandler = $InterfaceHandler
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	#Swapping input modes grid/ui elements
 	if Input.is_action_just_pressed("ACCEPT"):
-		if InputMode == "GRID":
+		if InputMode == "GRIDbutcooler":
+			InputMode = "UIMode"
+			$Character/Arrow.visible = !$Character/Arrow.visible
+		elif InputMode == "UIMode":
+			InputMode = "DialogueOption"
+		elif InputMode == "DialogueOption":
 			InputMode = "GRIDbutcooler"
-		elif InputMode == "GRIDbutcooler":
-			InputMode = "GRID"
-		$Character/Arrow.visible = !$Character/Arrow.visible
-		$Character/HexInstructions.visible = !$Character/HexInstructions.visible
+			$Character/Arrow.visible = !$Character/Arrow.visible
+	
 	elif Input.is_action_just_pressed("DENY"):
 		#spawn cube / ice cube [temp]
-		if InputMode == "GRID":
-			spawnCube(CharacterX-1,CharacterY)
-		elif InputMode == "GRIDbutcooler":
-			spawnIceCube(CharacterX+1,CharacterY)
+		if InputMode == "GRIDbutcooler":
+			SpawnEntity(CharacterX-1,CharacterY,cube)
+			SpawnEntity(CharacterX+1,CharacterY,cubeIce)
 		
 	if Input.is_action_just_pressed("WAIT"):
 		updateTime()
 	
 	#player stuff!
-	#hexagonal movement means six movement axis, up/down, topleft/bottomright, bottomleft/topright
-	if InputMode == "GRID":
-		if Input.is_action_just_pressed("LEFT"):
-			if InternalposToGamepos($Character,"LEFT") == true:
-				updateTime()
-		elif Input.is_action_just_pressed("RIGHT"):
-			if InternalposToGamepos($Character,"RIGHT") == true:
-				updateTime()
-		elif Input.is_action_just_pressed("LOWN"):
-			if InternalposToGamepos($Character,"LOWN") == true:
-				updateTime()
-		elif Input.is_action_just_pressed("ROWN"):
-			if InternalposToGamepos($Character,"ROWN") == true:
-				updateTime()
-		elif Input.is_action_just_pressed("LUP"):
-			if InternalposToGamepos($Character,"LUP") == true:
-				updateTime()
-		elif Input.is_action_just_pressed("RUP"):
-			if InternalposToGamepos($Character,"RUP") == true:
-				updateTime()
 	elif InputMode == "GRIDbutcooler":
 		#it has now been updated, move the next direction to step
 		if Input.is_action_just_pressed("LEFT"):
@@ -298,34 +320,6 @@ func _process(delta: float) -> void:
 				forSakeOfCodeReadabilityTheCharacterIsFacing = "RUP"
 			if InternalposToGamepos($Character,forSakeOfCodeReadabilityTheCharacterIsFacing) == true:
 				updateTime()
-
-func spawnCube(X,Y):
-	if ActiveGrid.has(str(X)+","+str(Y)) and ActiveGrid[str(X)+","+str(Y)] is String:
-			var cubeinst = cube.instantiate()
-			if abs(Y) % 2 == 1:
-				cubeinst.position = Vector2((((X) * 64) + 32),(Y * 50))
-			else:
-				cubeinst.position = Vector2(((X) * 64),(Y * 50))
-			cubeinst.set_meta("X",X)
-			cubeinst.set_meta("Y",Y)
-			add_child(cubeinst)
-			ActiveGrid[str(X)+","+str(Y)] = cubeinst
-	else:
-		return false
-
-func spawnIceCube(X,Y):
-	if ActiveGrid.has(str(X)+","+str(Y)) and ActiveGrid[str(X)+","+str(Y)] is String:
-			var cubeIceinst = cubeIce.instantiate()
-			if abs(Y) % 2 == 1:
-				cubeIceinst.position = Vector2((((X) * 64) + 32),(Y * 50))
-			else:
-				cubeIceinst.position = Vector2(((X) * 64),(Y * 50))
-			cubeIceinst.set_meta("X",X)
-			cubeIceinst.set_meta("Y",Y)
-			add_child(cubeIceinst)
-			ActiveGrid[str(X)+","+str(Y)] = cubeIceinst
-	else:
-		return false
 
 func updateTime():
 	InterfaceHandler.clockTick()

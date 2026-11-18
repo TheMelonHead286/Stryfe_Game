@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://ppc2d06b0iw8"]
+
+[ext_resource type="Texture2D" uid="uid://c64rhplgcxogs" path="res://textures/prealpha/tile_wall.png" id="1_61bvd"]
+
+[node name="TileWall" type="Sprite2D" unique_id=762730701]
+texture_filter = 1
+scale = Vector2(2, 2)
+texture = ExtResource("1_61bvd")
+metadata/Type = "wall"
