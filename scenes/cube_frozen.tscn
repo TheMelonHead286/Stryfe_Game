@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://gbj64u180xc2"]
+
+[ext_resource type="Texture2D" uid="uid://c1jmm8gfodqdk" path="res://textures/prealpha/cube_frozen.png" id="1_5d0nc"]
+
+[node name="CubeFrozen" type="Sprite2D" unique_id=542025247]
+texture_filter = 1
+scale = Vector2(2, 2)
+texture = ExtResource("1_5d0nc")
+metadata/facing = "SPAWNED"
+metadata/type = "cubefrozen"
+metadata/sliding = false

@@ -23,6 +23,7 @@ script = ExtResource("2_28aoi")
 [node name="Character" type="Sprite2D" parent="LevelHandler" unique_id=760688139]
 z_index = 1
 texture_filter = 1
+position = Vector2(-400, -1)
 scale = Vector2(2, 2)
 texture = ExtResource("3_l8v81")
 metadata/type = "character"
@@ -47,7 +48,7 @@ script = ExtResource("4_jnlp7")
 [node name="ScreenOverlay" type="Sprite2D" parent="LevelHandler/InterfaceHandler" unique_id=396840287]
 z_index = 5
 texture_filter = 1
-scale = Vector2(36.1, 36.1)
+scale = Vector2(18.115, 18.115)
 texture = ExtResource("4_vyht1")
 
 [node name="Clock" type="Sprite2D" parent="LevelHandler/InterfaceHandler" unique_id=2061077412]

@@ -10,19 +10,16 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	pass
 
-var clckTckr = 0
+var clckTckr = 2
 @onready var Clock = $Clock
-func clockTick() -> void:
-	if clckTckr == 0:
-		clckTckr += 1
+func clockTick(amount) -> void:
+	clckTckr += amount
+	if clckTckr%4 == 0:
 		Clock.texture = load("res://textures/prealpha/clockbl.png")
-	elif clckTckr == 1:
-		clckTckr += 1
+	elif clckTckr%4 == 1:
 		Clock.texture = load("res://textures/prealpha/clocktl.png")
-	elif clckTckr == 2:
-		clckTckr += 1
+	elif clckTckr%4 == 2:
 		Clock.texture = load("res://textures/prealpha/clocktr.png")
-	elif clckTckr == 3:
-		clckTckr = 0
+	elif clckTckr%4 == 3:
 		Clock.texture = load("res://textures/prealpha/clockbr.png")
 		

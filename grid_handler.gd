@@ -3,11 +3,12 @@ extends Node2D
 #dictionary to keep track of objects in level
 var ActiveGridCoord = {}
 var ActiveGridSliding = []
+var InactiveGridCoord = {}
 
 #level grid, may need to be dynamic, doubles the value entered
-var ActiveGridMaxX = 11
-var ActiveGridMaxY = 4
-var ActiveLevelScale = 0.78 #<- intened for 9 x 3 grid, scales everything accordingly
+var ActiveGridMaxX = 12
+var ActiveGridMaxY = 5
+var ActiveLevelScale = 0.78 #<- intened for 9 x 3 grid, scale everything accordingly
 
 #semi-command pattern inputs, inputs can go to the grid, UI, or dialogue (only grid inputs can be undone)
 var InputMode = "GRIDbutcooler"
@@ -15,10 +16,10 @@ var GameState = []#: is a list, that has lists, of dictionaries of objects' of d
 #order of lists are previous states, each key is the object, value is a list of metadata of the object
 
 #Hexagons but square internal grid cause thats easier :)
-#-2-4 hours later, square internal grid NOT easy, square internal grid fucking HARD
+#-2- 4 hours later, square internal grid NOT easy, square internal grid fucking HARD
 #okay now this has turned into general update things on board function, i should probably split it.....
 #wrong! i do not want to split this: undoing game states
-func InternalposToGamepos(object,moveto):
+func InternalposToGamepos(object,moveto,force = false):
 	#i swear, as you code, more and more ghosts appear. its sort of freaky
 	if object is String:
 		print(str(object)+" tried to move "+moveto)
@@ -29,10 +30,11 @@ func InternalposToGamepos(object,moveto):
 	
 	var X = object.get_meta("X")
 	var Y = object.get_meta("Y")
-	print(object.get_meta("type")+" "+moveto)
-	#autofail if moving something that doesnt exist or is wall
+	#specific objects properties before movement validation
 	if  object.get_meta("type") == "wall":
 		return false
+	if  object.get_meta("type") == "cubefrozen":
+		force = true
 	
 	#update new position (if facing is RIGHT, move obj to the RIGHT)
 	if moveto == "RIGHT":
@@ -40,7 +42,7 @@ func InternalposToGamepos(object,moveto):
 			ActiveGridCoord.erase(str(X)+","+str(Y))
 			X += 1
 		else:
-			if ActiveGridCoord.has(str(X+1)+","+str(Y)) and InternalposToGamepos(ActiveGridCoord[str(X+1)+","+str(Y)],moveto) == true:
+			if force and ActiveGridCoord.has(str(X+1)+","+str(Y)) and InternalposToGamepos(ActiveGridCoord[str(X+1)+","+str(Y)],moveto) == true:
 				ActiveGridCoord.erase(str(X)+","+str(Y))
 				X += 1
 			else:
@@ -51,7 +53,7 @@ func InternalposToGamepos(object,moveto):
 			ActiveGridCoord.erase(str(X)+","+str(Y))
 			X -= 1
 		else:
-			if ActiveGridCoord.has(str(X-1)+","+str(Y)) and InternalposToGamepos(ActiveGridCoord[str(X-1)+","+str(Y)],moveto) == true:
+			if force and ActiveGridCoord.has(str(X-1)+","+str(Y)) and InternalposToGamepos(ActiveGridCoord[str(X-1)+","+str(Y)],moveto) == true:
 				ActiveGridCoord.erase(str(X)+","+str(Y))
 				X -= 1
 			else:
@@ -64,7 +66,7 @@ func InternalposToGamepos(object,moveto):
 				X -= 1
 				Y += 1
 			else:
-				if ActiveGridCoord.has(str(X-1)+","+str(Y+1)) and InternalposToGamepos(ActiveGridCoord[str(X-1)+","+str(Y+1)],moveto) == true:
+				if force and ActiveGridCoord.has(str(X-1)+","+str(Y+1)) and InternalposToGamepos(ActiveGridCoord[str(X-1)+","+str(Y+1)],moveto) == true:
 					ActiveGridCoord.erase(str(X)+","+str(Y))
 					X -= 1
 					Y += 1
@@ -75,7 +77,7 @@ func InternalposToGamepos(object,moveto):
 				ActiveGridCoord.erase(str(X)+","+str(Y))
 				Y+= 1
 			else:
-				if ActiveGridCoord.has(str(X)+","+str(Y+1)) and InternalposToGamepos(ActiveGridCoord[str(X)+","+str(Y+1)],moveto) == true:
+				if force and ActiveGridCoord.has(str(X)+","+str(Y+1)) and InternalposToGamepos(ActiveGridCoord[str(X)+","+str(Y+1)],moveto) == true:
 					ActiveGridCoord.erase(str(X)+","+str(Y))
 					Y+= 1
 				else:
@@ -88,7 +90,7 @@ func InternalposToGamepos(object,moveto):
 				X += 1
 				Y += 1
 			else:
-				if ActiveGridCoord.has(str(X+1)+","+str(Y+1)) and InternalposToGamepos(ActiveGridCoord[str(X+1)+","+str(Y+1)],moveto) == true:
+				if force and ActiveGridCoord.has(str(X+1)+","+str(Y+1)) and InternalposToGamepos(ActiveGridCoord[str(X+1)+","+str(Y+1)],moveto) == true:
 					ActiveGridCoord.erase(str(X)+","+str(Y))
 					X += 1
 					Y += 1
@@ -99,7 +101,7 @@ func InternalposToGamepos(object,moveto):
 				ActiveGridCoord.erase(str(X)+","+str(Y))
 				Y += 1
 			else:
-				if ActiveGridCoord.has(str(X)+","+str(Y+1)) and InternalposToGamepos(ActiveGridCoord[str(X)+","+str(Y+1)],moveto) == true:
+				if force and ActiveGridCoord.has(str(X)+","+str(Y+1)) and InternalposToGamepos(ActiveGridCoord[str(X)+","+str(Y+1)],moveto) == true:
 					ActiveGridCoord.erase(str(X)+","+str(Y))
 					Y += 1
 				else:
@@ -112,7 +114,7 @@ func InternalposToGamepos(object,moveto):
 				X -= 1
 				Y -= 1
 			else:
-				if ActiveGridCoord.has(str(X-1)+","+str(Y-1)) and InternalposToGamepos(ActiveGridCoord[str(X-1)+","+str(Y-1)],moveto) == true:
+				if force and ActiveGridCoord.has(str(X-1)+","+str(Y-1)) and InternalposToGamepos(ActiveGridCoord[str(X-1)+","+str(Y-1)],moveto) == true:
 					ActiveGridCoord.erase(str(X)+","+str(Y))
 					X -= 1
 					Y -= 1
@@ -123,7 +125,7 @@ func InternalposToGamepos(object,moveto):
 				ActiveGridCoord.erase(str(X)+","+str(Y))
 				Y -= 1
 			else:
-				if ActiveGridCoord.has(str(X)+","+str(Y-1)) and InternalposToGamepos(ActiveGridCoord[str(X)+","+str(Y-1)],moveto) == true:
+				if force and ActiveGridCoord.has(str(X)+","+str(Y-1)) and InternalposToGamepos(ActiveGridCoord[str(X)+","+str(Y-1)],moveto) == true:
 					ActiveGridCoord.erase(str(X)+","+str(Y))
 					Y -= 1
 				else:
@@ -136,7 +138,7 @@ func InternalposToGamepos(object,moveto):
 				X += 1
 				Y -= 1
 			else:
-				if ActiveGridCoord.has(str(X+1)+","+str(Y-1)) and InternalposToGamepos(ActiveGridCoord[str(X+1)+","+str(Y-1)],moveto) == true:
+				if force and ActiveGridCoord.has(str(X+1)+","+str(Y-1)) and InternalposToGamepos(ActiveGridCoord[str(X+1)+","+str(Y-1)],moveto) == true:
 					ActiveGridCoord.erase(str(X)+","+str(Y))
 					X += 1
 					Y -= 1
@@ -147,7 +149,7 @@ func InternalposToGamepos(object,moveto):
 				ActiveGridCoord.erase(str(X)+","+str(Y))
 				Y -= 1
 			else:
-				if ActiveGridCoord.has(str(X)+","+str(Y-1)) and InternalposToGamepos(ActiveGridCoord[str(X)+","+str(Y-1)],moveto) == true:
+				if force and ActiveGridCoord.has(str(X)+","+str(Y-1)) and InternalposToGamepos(ActiveGridCoord[str(X)+","+str(Y-1)],moveto) == true:
 					ActiveGridCoord.erase(str(X)+","+str(Y))
 					Y -= 1
 				else:
@@ -166,12 +168,22 @@ func InternalposToGamepos(object,moveto):
 		#....
 		return true
 	else:
-		print("moving object did not have facing direction")
+		print("moving object did not have valid facing direction")
 		return false
 	
 	#Sliding cases
-	if object.get_meta("type") == "cubeice":
+	if InactiveGridCoord[str(X)+","+str(Y)].get_meta("type") == "frozen":
 		object.set_meta("sliding", true)
+	else:
+		if object.get_meta("type") == "cubeice" or object.get_meta("type") == "cubefrozen":
+			object.set_meta("sliding", true)
+			if object.get_meta("type") == "cubefrozen":
+				InactiveGridCoord[str(X)+","+str(Y)].set_meta("type","frozen")
+				InactiveGridCoord[str(X)+","+str(Y)].texture = load("res://textures/prealpha/tile_slippy.png")
+		else:
+			object.set_meta("sliding", false)
+			if object in ActiveGridSliding:
+				ActiveGridSliding = ActiveGridSliding.filter(func(item): return item != object)
 	if object.get_meta("sliding") == true:
 		object.set_meta("facing", moveto)
 		if object not in ActiveGridSliding:
@@ -188,7 +200,6 @@ func InternalposToGamepos(object,moveto):
 		object.position = Vector2(int(round(ActiveLevelScale*(X * 64))),int(round(ActiveLevelScale*(Y * 50))))
 	
 	return true
-
 #helper function to create undo functionality
 func StoreState():
 	var ThisGamesState = []
@@ -208,11 +219,11 @@ func StoreState():
 	
 	GameState.append(ThisGamesState) #updating list of list of dictionaries of objects' dictionaries of their metadata
 	return true
-
 #function called on undo (reverse Store State & Spawn Entity) (also no redoing, womp womp)
 func UndoState(): 
 	if GameState.size() == 1:
 		return false
+	InterfaceHandler.clockTick(-1)
 	#remove ActiveGridCoord entries so objects dont push their ghost selves
 	for uhWhatWasThisListAgain in GameState[-1]:
 		for shitDoesItReturnTheObjectsNow in uhWhatWasThisListAgain:
@@ -239,14 +250,14 @@ func UndoState():
 			else:
 				shitDoesItReturnTheObjectsNow.position = Vector2(int(round(ActiveLevelScale*(X * 64))),int(round(ActiveLevelScale*(Y * 50))))
 	GameState.pop_at(-1) #doesnt remove the (now current) gamestate, removes the one that was "ahead" of it (no redoing)
-
 #General use case spawning scrip for cubes, crates (buttons), walls, etc
 var cube = load("res://scenes/cube.tscn")
 var cubeIce = load("res://scenes/cube_ice.tscn")
+var cubeFrozen = load("res://scenes/cube_frozen.tscn")
 var tileWall = load("res://scenes/tile_wall.tscn")
 @onready var InterfaceHandler = $InterfaceHandler
 func SpawnEntity(X,Y,LevelObject):
-	if str(X+1)+","+str(Y-1) not in ActiveGridCoord or ActiveGridCoord[str(X)+","+str(Y)] is String:
+	if str(X)+","+str(Y) not in ActiveGridCoord or ActiveGridCoord[str(X)+","+str(Y)] is String:
 			var inst = LevelObject.instantiate()
 			if abs(Y) % 2 == 1:
 				inst.position = Vector2(int(round(ActiveLevelScale*(((X) * 64) + 32))),int(round(ActiveLevelScale*(Y * 50))))
@@ -259,8 +270,7 @@ func SpawnEntity(X,Y,LevelObject):
 			ActiveGridCoord[str(X)+","+str(Y)] = inst
 	else:
 		return false
-
-#generating grid of level
+#generating grid of level (old, doesnt use scenes, should probably get optimized haha)
 func gengrid() -> void:
 	#half of them, even row
 	for ix in range(-(ActiveGridMaxX-1),ActiveGridMaxX):
@@ -268,17 +278,20 @@ func gengrid() -> void:
 			var tile = Sprite2D.new()
 			tile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			tile.scale = Vector2(ActiveLevelScale*2,ActiveLevelScale*2)
-			tile.z_index = -2
 			tile.position = Vector2(int(round(ActiveLevelScale*ix*64)),int(round(ActiveLevelScale*iy*100)))
 			tile.name = "grid,"+str(ix*2)+","+str(iy*2)
-			if ix == -ActiveGridMaxX+1 or iy == -ActiveGridMaxY+1 or ix == ActiveGridMaxX-1 or iy == ActiveGridMaxY-1:
+			if ix <= -ActiveGridMaxX+2 or iy <= -ActiveGridMaxY+2 or ix >= ActiveGridMaxX-2 or iy >= ActiveGridMaxY-2:
+				tile.z_index = -2
 				tile.texture = load("res://textures/prealpha/tile_wall.png")
 				ActiveGridCoord[str(ix)+","+str(iy*2)] = tile
 				tile.set_meta("X",ix)
 				tile.set_meta("Y",iy)
 				tile.set_meta("type","wall")
 			else:
+				tile.z_index = -3
 				tile.texture = load("res://textures/prealpha/tile.png")
+				InactiveGridCoord[str(ix)+","+str(iy*2)] = tile
+				tile.set_meta("type","basic")
 			add_child(tile)
 	#other half, odd row
 	for ix in range(-ActiveGridMaxX,ActiveGridMaxX):
@@ -287,26 +300,28 @@ func gengrid() -> void:
 			tile.texture = load("res://textures/prealpha/tile.png")
 			tile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			tile.scale = Vector2(ActiveLevelScale*2,ActiveLevelScale*2)
-			tile.z_index = -2
 			tile.position = Vector2(int(round(ActiveLevelScale*((ix*64)+32))),(int(round(ActiveLevelScale*((iy*100)+50)))))
 			tile.name = "grid,"+str((ix*2)+1)+","+str((iy*2)+1)
-			if ix == -ActiveGridMaxX or iy == -ActiveGridMaxY or ix == ActiveGridMaxX-1 or iy == ActiveGridMaxY-1:
+			if ix <= -ActiveGridMaxX+1 or iy <= -ActiveGridMaxY+2 or ix >= ActiveGridMaxX-2 or iy >= ActiveGridMaxY-3:
+				tile.z_index = -2
 				tile.texture = load("res://textures/prealpha/tile_wall.png")
 				ActiveGridCoord[str(ix)+","+str((iy*2)+1)] = tile
 				tile.set_meta("X",ix)
 				tile.set_meta("Y",iy)
 				tile.set_meta("type","wall")
 			else:
+				tile.z_index = -3
 				tile.texture = load("res://textures/prealpha/tile.png")
+				InactiveGridCoord[str(ix)+","+str((iy*2)+1)] = tile
+				tile.set_meta("type","basic")
 			add_child(tile)
-
 # Called when the node enters the scene tree for the first time.
 var CharacterFacing = 0
 var forSakeOfCodeReadabilityTheCharacterIsFacing = "RIGHT"
 func _ready() -> void:
 	gengrid()
-	ActiveGridCoord[str(0)+","+str(0)] = $Character
-	$Character.set_meta("X",0)
+	ActiveGridCoord[str(-8)+","+str(0)] = $Character
+	$Character.set_meta("X",-8)
 	$Character.set_meta("Y",0)
 	$Character.scale = Vector2(ActiveLevelScale*2,ActiveLevelScale*2)
 	StoreState()
@@ -329,6 +344,7 @@ func _process(delta: float) -> void:
 		if InputMode == "GRIDbutcooler":
 			SpawnEntity($Character.get_meta("X")-1,$Character.get_meta("Y"),cube)
 			SpawnEntity($Character.get_meta("X")+1,$Character.get_meta("Y"),cubeIce)
+			SpawnEntity($Character.get_meta("X"),$Character.get_meta("Y")+1,cubeFrozen)
 			updateTime()
 		
 	if Input.is_action_just_pressed("WAIT"):
@@ -365,21 +381,21 @@ func _process(delta: float) -> void:
 			elif CharacterFacing == 5:
 				forSakeOfCodeReadabilityTheCharacterIsFacing = "RUP"
 			$Character.set_meta("facing",forSakeOfCodeReadabilityTheCharacterIsFacing)
-			InternalposToGamepos($Character,forSakeOfCodeReadabilityTheCharacterIsFacing)
+			InternalposToGamepos($Character,forSakeOfCodeReadabilityTheCharacterIsFacing, true)
 			updateTime()
 		elif Input.is_action_just_pressed("UNDO"):
 			UndoState()
 
 func updateTime():
-	InterfaceHandler.clockTick()
 	var popTicker = 0
 	ActiveGridSliding = ActiveGridSliding.filter(func(sliders): return is_instance_valid(sliders))#supposedly this is a good safeguard. thanks godot forums
 	for slider in ActiveGridSliding:
 		if slider.get_meta("facing") == "NEUTRAL":
 			ActiveGridSliding.pop_at(popTicker)
 		elif InternalposToGamepos(slider, slider.get_meta("facing")) == false:
-			slider.set_meta("sliding", false)
-			slider.set_meta("facing", "NEUTRAL")
-			ActiveGridSliding.pop_at(popTicker)
+				slider.set_meta("sliding", false)
+				slider.set_meta("facing", "NEUTRAL")
+				ActiveGridSliding.pop_at(popTicker)
 		popTicker += 1
+	InterfaceHandler.clockTick(1)
 	StoreState()
