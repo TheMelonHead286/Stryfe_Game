@@ -27,6 +27,7 @@ scale = Vector2(2, 2)
 texture = ExtResource("3_l8v81")
 metadata/type = "character"
 metadata/sliding = false
+metadata/facing = "NEUTRAL"
 
 [node name="Arrow" type="Sprite2D" parent="LevelHandler/Character" unique_id=78336745]
 texture = ExtResource("4_bf3um")
@@ -41,7 +42,6 @@ position = Vector2(18.5, 29.5)
 texture = ExtResource("6_tw3kd")
 
 [node name="InterfaceHandler" type="Node2D" parent="LevelHandler" unique_id=1449958456]
-visible = false
 script = ExtResource("4_jnlp7")
 
 [node name="ScreenOverlay" type="Sprite2D" parent="LevelHandler/InterfaceHandler" unique_id=396840287]

@@ -7,3 +7,5 @@ texture_filter = 1
 scale = Vector2(2, 2)
 texture = ExtResource("1_wd2d1")
 metadata/type = "cube"
+metadata/sliding = false
+metadata/facing = "SPAWNED"

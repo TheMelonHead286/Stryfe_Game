@@ -8,3 +8,4 @@ scale = Vector2(2, 2)
 texture = ExtResource("1_7eqbb")
 metadata/type = "cubeice"
 metadata/sliding = false
+metadata/facing = "SPAWNED"
